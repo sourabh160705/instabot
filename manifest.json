@@ -1,0 +1,32 @@
+{
+  "name": "InstaBot AI — Content Generator",
+  "short_name": "InstaBot",
+  "description": "AI-powered Instagram content generator for Tech & AI pages",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/00f5a0/000000?text=IB",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/00f5a0/000000?text=IB",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["productivity", "social"],
+  "shortcuts": [
+    {
+      "name": "Generate Caption",
+      "short_name": "Caption",
+      "description": "Quick generate a post caption",
+      "url": "/index.html"
+    }
+  ]
+}

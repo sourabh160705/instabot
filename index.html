@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InstaBot AI — Tech & AI Content Generator</title>
+  <meta name="description" content="AI-powered Instagram content generator for Tech & AI pages" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --card: #16161f;
+      --border: #2a2a3a;
+      --accent: #00f5a0;
+      --accent2: #7c3aed;
+      --accent3: #f59e0b;
+      --text: #e8e8f0;
+      --muted: #6b6b85;
+      --danger: #ef4444;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,245,160,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,160,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px 100px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      padding: 28px 0 20px;
+      text-align: center;
+    }
+
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,245,160,0.08);
+      border: 1px solid rgba(0,245,160,0.2);
+      border-radius: 100px;
+      padding: 6px 16px;
+      margin-bottom: 16px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+
+    .logo-badge::before {
+      content: '●';
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1px;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, var(--accent), #00d4ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 8px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Trending Bar */
+    .trending-bar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin: 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .trending-label {
+      font-size: 10px;
+      font-family: 'Space Mono', monospace;
+      color: var(--accent3);
+      white-space: nowrap;
+      letter-spacing: 1px;
+    }
+
+    .trending-scroll {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .trending-tags {
+      display: flex;
+      gap: 8px;
+      animation: scroll-left 20s linear infinite;
+      width: max-content;
+    }
+
+    @keyframes scroll-left {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .trending-tag {
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.3);
+      color: #a78bfa;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      white-space: nowrap;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Form Card */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 12px;
+    }
+
+    input[type="text"]:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    input::placeholder { color: var(--muted); }
+
+    select option { background: var(--surface); }
+
+    /* Content Type Buttons */
+    .type-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .type-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 10px 8px;
+      border-radius: 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .type-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .type-btn.active {
+      background: rgba(0,245,160,0.1);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .type-btn .icon { display: block; font-size: 18px; margin-bottom: 4px; }
+
+    /* Generate Button */
+    .generate-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), #00c4ff);
+      color: #000;
+      border: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 16px;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .generate-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,245,160,0.3); }
+    .generate-btn:active { transform: translateY(0); }
+    .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .generate-btn .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Output */
+    .output-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .output-card.visible { display: block; animation: fadeUp 0.3s ease; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .output-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .output-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase;
+    }
+
+    .copy-btn {
+      background: rgba(0,245,160,0.1);
+      border: 1px solid rgba(0,245,160,0.3);
+      color: var(--accent);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover { background: rgba(0,245,160,0.2); }
+    .copy-btn.copied { color: var(--accent3); border-color: var(--accent3); background: rgba(245,158,11,0.1); }
+
+    .output-text {
+      font-size: 14px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Share row */
+    .share-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .share-btn {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-family: 'Space Mono', monospace;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .share-btn:hover { border-color: #25d366; color: #25d366; }
+    .share-btn.insta:hover { border-color: #e1306c; color: #e1306c; }
+
+    /* Stats */
+    .stats-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      margin-top: 2px;
+    }
+
+    /* Install Banner */
+    .install-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .install-banner.visible { transform: translateY(0); }
+
+    .install-text { font-size: 13px; font-weight: 600; }
+    .install-sub { font-size: 11px; opacity: 0.75; margin-top: 2px; font-family: 'Space Mono', monospace; }
+
+    .install-btn {
+      background: #fff;
+      color: #4f46e5;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .close-banner {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.6);
+      font-size: 18px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    /* Error */
+    .error-msg {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: 'Space Mono', monospace;
+      margin-top: 12px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo-badge">LIVE · AI POWERED</div>
+    <h1>Insta<span>Bot</span> AI</h1>
+    <p class="subtitle">Tech & AI Content Generator</p>
+  </header>
+
+  <!-- Trending Bar -->
+  <div class="trending-bar">
+    <span class="trending-label">🔥 TRENDING</span>
+    <div class="trending-scroll">
+      <div class="trending-tags" id="trendingTags">
+        <span class="trending-tag">#ChatGPT</span>
+        <span class="trending-tag">#AITools2026</span>
+        <span class="trending-tag">#Gemini</span>
+        <span class="trending-tag">#OpenAI</span>
+        <span class="trending-tag">#AIRevolution</span>
+        <span class="trending-tag">#Sora</span>
+        <span class="trending-tag">#Midjourney</span>
+        <span class="trending-tag">#TechIndia</span>
+        <span class="trending-tag">#ChatGPT</span>
+        <span class="trending-tag">#AITools2026</span>
+        <span class="trending-tag">#Gemini</span>
+        <span class="trending-tag">#OpenAI</span>
+        <span class="trending-tag">#AIRevolution</span>
+        <span class="trending-tag">#Sora</span>
+        <span class="trending-tag">#Midjourney</span>
+        <span class="trending-tag">#TechIndia</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num" id="genCount">0</div>
+      <div class="stat-label">Generated</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="copyCount">0</div>
+      <div class="stat-label">Copied</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">6</div>
+      <div class="stat-label">Content Types</div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="card">
+    <div class="card-title">01 · Topic</div>
+    <input type="text" id="topicInput" placeholder="e.g. ChatGPT, AI robots, Midjourney..." />
+
+    <div class="card-title">02 · Tone</div>
+    <select id="toneSelect">
+      <option value="hype">🔥 Hype & Exciting</option>
+      <option value="educational">📚 Educational</option>
+      <option value="engaging">💬 Engaging</option>
+      <option value="professional">💼 Professional</option>
+      <option value="fun">😄 Fun & Casual</option>
+      <option value="savage">😈 Savage / Bold</option>
+      <option value="calm">🧘 Calm & Mindful</option>
+      <option value="meme">🤣 Meme / Roast</option>
+      <option value="sales">💰 Sales / Persuasive</option>
+      <option value="inspirational">🌟 Inspirational</option>
+      <option value="student">🎓 Student Friendly</option>
+      <option value="story">🗣️ Storytelling</option>
+      <option value="robotic">🤖 Robotic / Futuristic</option>
+    </select>
+
+    <div class="card-title">03 · Content Type</div>
+    <div class="type-grid">
+      <button class="type-btn active" onclick="selectType(this,'caption')">
+        <span class="icon">📝</span>Post Caption
+      </button>
+      <button class="type-btn" onclick="selectType(this,'reel')">
+        <span class="icon">🎬</span>Reel Script
+      </button>
+      <button class="type-btn" onclick="selectType(this,'story')">
+        <span class="icon">📱</span>Story Slides
+      </button>
+      <button class="type-btn" onclick="selectType(this,'carousel')">
+        <span class="icon">🎠</span>Carousel
+      </button>
+      <button class="type-btn" onclick="selectType(this,'quote')">
+        <span class="icon">💡</span>Quote Post
+      </button>
+      <button class="type-btn" onclick="selectType(this,'weekly')">
+        <span class="icon">📅</span>Weekly Plan
+      </button>
+    </div>
+
+    <button class="generate-btn" id="generateBtn" onclick="generateContent()">
+      <span id="btnText">⚡ Generate Content</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- Output -->
+  <div class="output-card" id="outputCard">
+    <div class="output-header">
+      <span class="output-label" id="outputLabel">OUTPUT</span>
+      <button class="copy-btn" id="copyBtn" onclick="copyContent()">Copy</button>
+    </div>
+    <div class="output-text" id="outputText"></div>
+    <div class="share-row">
+      <button class="share-btn" onclick="shareWhatsApp()">📤 WhatsApp</button>
+      <button class="share-btn insta" onclick="shareNative()">📲 Share</button>
+    </div>
+  </div>
+</div>
+
+<!-- Install Banner -->
+<div class="install-banner" id="installBanner">
+  <div>
+    <div class="install-text">📲 Add to Home Screen</div>
+    <div class="install-sub">Install as app · Works offline</div>
+  </div>
+  <button class="install-btn" id="installBtn">Install</button>
+  <button class="close-banner" onclick="document.getElementById('installBanner').classList.remove('visible')">×</button>
+</div>
+
+<script>
+  // State
+  let selectedType = 'caption';
+  let genCount = parseInt(localStorage.getItem('genCount') || '0');
+  let copyCount = parseInt(localStorage.getItem('copyCount') || '0');
+  document.getElementById('genCount').textContent = genCount;
+  document.getElementById('copyCount').textContent = copyCount;
+
+  // Content type selector
+  function selectType(btn, type) {
+    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedType = type;
+  }
+
+  // Tone definitions for hooks and icons
+  const toneConfig = {
+    hype:          { icon: '🔥', label: 'HYPE' },
+    educational:   { icon: '📚', label: 'EDUCATIONAL' },
+    engaging:      { icon: '💬', label: 'ENGAGING' },
+    professional:  { icon: '💼', label: 'PROFESSIONAL' },
+    fun:           { icon: '😄', label: 'FUN' },
+    savage:        { icon: '😈', label: 'SAVAGE' },
+    calm:          { icon: '🧘', label: 'CALM' },
+    meme:          { icon: '🤣', label: 'MEME' },
+    sales:         { icon: '💰', label: 'SALES' },
+    inspirational: { icon: '🌟', label: 'INSPIRATIONAL' },
+    student:       { icon: '🎓', label: 'STUDENT' },
+    story:         { icon: '🗣️', label: 'STORY' },
+    robotic:       { icon: '🤖', label: 'ROBOTIC' },
+  };
+
+  const captionHooks = {
+    hype:          (t) => `🚨 BREAKING: ${t} just changed EVERYTHING. The people who ignore this will regret it in 2026.`,
+    educational:   (t) => `Here's everything you need to know about ${t} — explained simply in under 60 seconds.`,
+    engaging:      (t) => `Hot take: ${t} is the most underrated thing in tech right now. Change my mind 👇`,
+    professional:  (t) => `${t} is reshaping the industry. Here's a breakdown of what that means for you.`,
+    fun:           (t) => `Nobody talks about ${t} like this 😂 But they should. Here's why 👇`,
+    savage:        (t) => `Let me be brutally honest — if you're still not using ${t}, you're just choosing to stay behind. No excuses. 😈`,
+    calm:          (t) => `Take a breath. 🌿 ${t} isn't something to rush. Here's a peaceful guide to understanding it at your own pace.`,
+    meme:          (t) => `Me before ${t}: 😴 struggling daily.\nMe after ${t}: 😎 done by 9 AM.\nThe difference is embarrassing 💀`,
+    sales:         (t) => `⚠️ LAST CHANCE: The people using ${t} are already 10 steps ahead of you. Here's exactly how to catch up — starting today.`,
+    inspirational: (t) => `✨ Every great creator, every successful entrepreneur — they all found their ${t} moment. Today could be yours.`,
+    student:       (t) => `Hey students! 👋 ${t} sounds complicated but trust me — it's actually super easy and FREE. Here's how it works in simple words 👇`,
+    story:         (t) => `6 months ago I had no idea what ${t} was. Then one video changed everything. Here's my honest story 👇`,
+    robotic:       (t) => `SYSTEM UPDATE: ${t} has entered the grid. Biological inefficiency detected. Upgrade recommended. Processing... ⚙️🤖`,
+  };
+
+  const reelHooks = {
+    hype:          (t) => `"${t} is making people rich while they sleep — and 99% don't know it."`,
+    educational:   (t) => `"In the next 45 seconds, I'll explain ${t} better than any 10-hour course."`,
+    engaging:      (t) => `"Okay real talk — is ${t} actually worth the hype? Let's find out."`,
+    professional:  (t) => `"${t} is quietly becoming the most important skill in every industry. Here's why."`,
+    fun:           (t) => `"POV: You just discovered ${t} and now you can't stop using it 😂"`,
+    savage:        (t) => `"Still doing things manually? While ${t} exists? That's actually wild. 😈"`,
+    calm:          (t) => `"You don't need to rush. ${t} will still be here. But let me gently show you why starting today matters. 🌿"`,
+    meme:          (t) => `"${t} walked so ChatGPT could run. But honestly both of them left us in the dust 💀"`,
+    sales:         (t) => `"I'm going to show you exactly how ${t} can save you 20 hours a week. Watch till the end."`,
+    inspirational: (t) => `"${t} didn't change my workflow. It changed how I see what's possible. ✨"`,
+    student:       (t) => `"If you're a student and not using ${t} yet — please watch this. It's free and it'll save your semester. 🎓"`,
+    story:         (t) => `"I was failing, burnt out, and ready to quit. Then I discovered ${t}. Here's what happened next."`,
+    robotic:       (t) => `"WARNING: ${t} is not a tool. It is an evolution. Resistance is statistically inefficient. 🤖"`,
+  };
+
+  const quotesByTone = {
+    hype:          (t) => [`"${t} is not the future. It's the present. And most people are still sleeping."`, `"The window to master ${t} is NOW. Every day you wait, someone else gets further ahead."`],
+    educational:   (t) => [`"Understanding ${t} is not about being smart. It's about being curious."`, `"${t} teaches us that learning never stops — it just evolves."`],
+    engaging:      (t) => [`"Hot take: ${t} will matter more in 10 years than your college degree."`, `"${t} is the conversation everyone is having — except the people who need it most."`],
+    professional:  (t) => [`"The professionals who integrate ${t} into their workflow will define the next decade."`, `"${t} is not replacing professionals. It is separating the exceptional from the average."`],
+    fun:           (t) => [`"Me using ${t}: wow I'm a genius. Also me: forgets to save the output 😂"`, `"${t} is just autocomplete that went to Harvard. And we love it for that."`],
+    savage:        (t) => [`"Complaining ${t} took your job? Maybe ${t} just worked harder than you. 😈"`, `"The people ignoring ${t} will be the ones asking why they got left behind. Don't be them."`],
+    calm:          (t) => [`"${t} is a river, not a race. Flow with it, and you'll go further than you imagine. 🌿"`, `"There is no urgency — only awareness. ${t} rewards those who approach it with patience."`],
+    meme:          (t) => [`"${t}: exists\nMe at 2am: guess I live here now 💀"`, `"${t} is just us teaching machines to do the things we were too lazy to do. Respect honestly."`],
+    sales:         (t) => [`"Every minute you delay using ${t} is revenue you're leaving on the table. 💰"`, `"${t} isn't an expense. It's the highest ROI investment you can make in yourself right now."`],
+    inspirational: (t) => [`"✨ ${t} didn't just change what I could do. It changed what I believed was possible."`, `"The greatest gift ${t} gives you isn't time. It's the courage to dream bigger."`],
+    student:       (t) => [`"Dear students: ${t} is the cheat code nobody told you about. Use it wisely. 🎓"`, `"You don't need experience to use ${t}. You just need to start."`],
+    story:         (t) => [`"I didn't understand ${t} the first time. Or the second. The third time, it changed everything."`, `"${t} isn't a shortcut. It's the long road taken faster — and that changes everything."`],
+    robotic:       (t) => [`"HUMAN QUERY: Why use ${t}?\nSYSTEM RESPONSE: Inefficiency is no longer optional. Upgrade. ⚙️"`, `"${t} does not sleep. Does not doubt. Does not stop. Neither should you. 🤖"`],
+  };
+
+  // Content templates
+  const templates = {
+    caption: (topic, tone) => {
+      const hook = (captionHooks[tone] || captionHooks.hype)(topic);
+      const hashtags = `\n\n#${topic.replace(/\s+/g,'')} #AITools #TechIndia #ArtificialIntelligence #TechContent #AIRevolution #FutureTech #LearnAI #TechCreator #ViralTech #AILife #DigitalFuture #TechNews #AIUpdate #IndiaAI`;
+      return hook + `\n\n✅ Save this post — you'll need it later.\n💬 Drop your thoughts below!\n📲 Follow for daily AI updates!` + hashtags;
+    },
+
+    reel: (topic, tone) => {
+      const hook = (reelHooks[tone] || reelHooks.hype)(topic);
+      const icon = toneConfig[tone]?.icon || '💡';
+      return `🎬 REEL SCRIPT — ${topic.toUpperCase()} [${toneConfig[tone]?.label || 'CUSTOM'} TONE]\n\n[HOOK — 0:00 to 0:03]\n${hook}\n\n[MAIN CONTENT]\n${icon} Point 1: ${topic} can automate tasks that take humans 3 hours — in minutes.\n${icon} Point 2: Over 10 million people already use ${topic} daily — are you one of them?\n${icon} Point 3: The learning curve is ZERO — anyone can start today for free.\n${icon} Point 4: Top creators are already making ₹50,000+/month using ${topic}.\n${icon} Point 5: The window to get ahead is NOW — before everyone else catches up.\n\n[CTA — End Screen]\n"Follow for daily ${topic} tips! ${icon} Drop a 💬 if you want Part 2!"`;
+    },
+
+    story: (topic, tone) => {
+      const storySlides = {
+        savage:        [`"Still not using ${topic}? Embarrassing. Here's why you need to fix that TODAY 😈"`, `"${topic} does in 5 mins what takes you 3 hours. No cap."`, `"Your competitors ARE using it. Just saying."`, `"Zero excuses left. It's free. It works. Start now."`, `"Follow if you're done playing small. 😈"`],
+        calm:          [`"Take a quiet moment with ${topic}. 🌿"`, `"It's not about speed. It's about clarity."`, `"${topic} helps you work with intention, not urgency."`, `"Start slow. Build steady. Grow peacefully."`, `"Follow for mindful tech content. 🍃"`],
+        meme:          [`"POV: you discover ${topic} exists 💀"`, `"Your brain: wow. Your boss: why are you so productive?"`, `"${topic} said 'let me handle that' and did it better 😭"`, `"We don't deserve ${topic} honestly."`, `"Follow for more tech memes! 🤣"`],
+        sales:         [`"⚠️ ${topic} is the tool closing the gap between you and success."`, `"Every top earner uses it. Every struggling creator doesn't."`, `"It costs ₹0. The ROI is unlimited."`, `"The only question left: why haven't you started?"`, `"Tap the link in bio. Start today. 💰"`],
+        inspirational: [`"✨ ${topic} is more than a tool. It's a belief that you can do more."`, `"Every expert was once a beginner with ${topic}."`, `"Your dreams don't shrink. ${topic} expands what's possible."`, `"Today is a good day to start."`, `"Follow for daily inspiration. 🌟"`],
+        student:       [`"Hey! 👋 Quick ${topic} tip for students!"`, `"It's completely free to use 🆓"`, `"Saves you hours on assignments and projects ⚡"`, `"Your seniors don't want you to know this 😄"`, `"Follow for more student life hacks! 🎓"`],
+        story:         [`"I want to tell you something personal about ${topic}..."`, `"6 months ago I had no clue this existed."`, `"Then one night, everything changed."`, `"Here's what I wish someone told me earlier."`, `"Follow to hear the full story. 🗣️"`],
+        robotic:       [`"SYSTEM: ${topic} protocol initiated. 🤖"`, `"PROCESSING: Human inefficiency detected."`, `"SOLUTION: ${topic} integration recommended."`, `"RESULT: 300% productivity increase logged."`, `"COMMAND: Follow for system upgrades. ⚙️"`],
+      };
+      const slides = storySlides[tone] || [
+        `"Did you know ${topic} can do THIS? 👀"`,
+        `"${topic} saves 3+ hours of work daily ⚡"`,
+        `"It's completely FREE to start right now 🆓"`,
+        `"Over 10M people are already using it 🌍"`,
+        `"Follow for daily AI tips! 🤖"`,
+      ];
+      return `📱 STORY SLIDES — ${topic.toUpperCase()} [${toneConfig[tone]?.label || ''} TONE]\n\n` +
+        slides.map((s, i) => `[Slide ${i+1}]\n${s}`).join('\n\n') +
+        `\n\n💡 TIP: Bold white text on dark background = max readability!`;
+    },
+
+    carousel: (topic, tone) => {
+      const covers = {
+        savage:        `"${topic} is Brutally Powerful — And You're Still Sleeping On It 😈"`,
+        calm:          `"A Gentle Guide to ${topic} — No Rush, Just Growth 🌿"`,
+        meme:          `"${topic} Said 'Lemme Cook' — And We Let It 💀"`,
+        sales:         `"How ${topic} Can Double Your Output Starting TODAY 💰"`,
+        inspirational: `"How ${topic} Helped Real People Achieve Extraordinary Things ✨"`,
+        student:       `"5 Ways Students Are Using ${topic} to Get Ahead 🎓"`,
+        story:         `"The Real Story Behind Why Everyone Is Talking About ${topic} 🗣️"`,
+        robotic:       `"${topic}: A Logical Breakdown for Maximum Human Efficiency 🤖"`,
+        hype:          `"5 Things ${topic} Can Do That Will Blow Your Mind 🔥"`,
+        educational:   `"${topic} Explained in 5 Simple Slides 📚"`,
+        engaging:      `"Let's Be Honest About ${topic} — The Good, The Bad, The Future 💬"`,
+        professional:  `"The Professional's Guide to ${topic} in 2026 💼"`,
+        fun:           `"${topic} Is Actually Hilarious When You Think About It 😄"`,
+      };
+      return `🎠 CAROUSEL — ${topic.toUpperCase()} [${toneConfig[tone]?.label || ''} TONE]\n\n[Cover Slide]\nTitle: ${covers[tone] || covers.hype}\nSubtitle: "Save this — you'll thank me later"\n\n[Slide 2]\nTitle: "What is ${topic}?"\nDesc: ${topic} is an AI-powered tool that helps you work faster, smarter, and more creatively — all for free.\n\n[Slide 3]\nTitle: "What can it do?"\nDesc: From writing content to summarising research, ${topic} handles tasks that used to take hours.\n\n[Slide 4]\nTitle: "Who should use it?"\nDesc: Students, creators, freelancers, entrepreneurs — literally anyone with a goal and a phone.\n\n[Slide 5]\nTitle: "How to start?"\nDesc: Go to the website, type what you need, and watch the magic happen. Zero setup required.\n\n[Last Slide — CTA]\n"Follow @YourPage for daily AI tips ${toneConfig[tone]?.icon || '🤖'}"\n"Which feature surprised you most? Comment below 👇"`;
+    },
+
+    quote: (topic, tone) => {
+      const pool = (quotesByTone[tone] || quotesByTone.hype)(topic);
+      const q = pool[Math.floor(Math.random() * pool.length)];
+      return `${toneConfig[tone]?.icon || '💡'} QUOTE POST [${toneConfig[tone]?.label || ''} TONE]\n\n${q}\n\n📌 Save this if it hit different.\n\n👇 Do you agree? Drop YES or NO in the comments!\n\n#AIQuotes #${topic.replace(/\s+/g,'')} #TechWisdom #FutureOfWork #AILife #TechMotivation #LearnAI #DigitalMindset`;
+    },
+
+    weekly: (topic, tone) => {
+      const icon = toneConfig[tone]?.icon || '📅';
+      return `📅 7-DAY CONTENT CALENDAR — ${topic.toUpperCase()} [${toneConfig[tone]?.label || ''} TONE]\n\n📌 MON (8 PM) — Carousel\n"5 ${topic} features you didn't know exist"\n\n🎬 TUE (7 PM) — Reel\n"Watch ${topic} do [task] in 60 seconds"\n\n${icon} WED (12 PM) — Quote Post\n${toneConfig[tone]?.label} style ${topic} quote for midweek\n\n📱 THU (6 PM) — Story Series\n"${topic} tip of the day" (5 slides)\n\n🔥 FRI (8 PM) — Reel\n"Top 3 ways ${topic} went viral this week"\n\n🎠 SAT (11 AM) — Carousel\n"Beginner's guide to ${topic} in 2026"\n\n🗳 SUN (7 PM) — Poll Post\n"What's your favourite ${topic} feature?"\n\n💡 PRO TIPS:\n• Post Reels on Tue & Fri for max reach\n• Use trending audio on every Reel\n• Reply to ALL comments in first 30 mins\n• Post in English for global reach`;
+    }
+  };
+
+  async function generateContent() {
+    const topic = document.getElementById('topicInput').value.trim();
+    const tone = document.getElementById('toneSelect').value;
+    const btn = document.getElementById('generateBtn');
+    const btnText = document.getElementById('btnText');
+    const spinner = document.getElementById('spinner');
+    const errorMsg = document.getElementById('errorMsg');
+
+    if (!topic) {
+      errorMsg.textContent = '⚠️ Please enter a topic first!';
+      errorMsg.style.display = 'block';
+      setTimeout(() => errorMsg.style.display = 'none', 3000);
+      return;
+    }
+
+    errorMsg.style.display = 'none';
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    spinner.style.display = 'block';
+
+    // Small delay for UX
+    await new Promise(r => setTimeout(r, 600));
+
+    try {
+      const content = templates[selectedType](topic, tone);
+      document.getElementById('outputText').textContent = content;
+      document.getElementById('outputLabel').textContent = selectedType.toUpperCase() + ' OUTPUT';
+      document.getElementById('outputCard').classList.add('visible');
+
+      genCount++;
+      localStorage.setItem('genCount', genCount);
+      document.getElementById('genCount').textContent = genCount;
+
+      document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch(e) {
+      errorMsg.textContent = '❌ Something went wrong. Please try again.';
+      errorMsg.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btnText.style.display = 'block';
+    spinner.style.display = 'none';
+  }
+
+  function copyContent() {
+    const text = document.getElementById('outputText').textContent;
+    const btn = document.getElementById('copyBtn');
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      copyCount++;
+      localStorage.setItem('copyCount', copyCount);
+      document.getElementById('copyCount').textContent = copyCount;
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function shareWhatsApp() {
+    const text = encodeURIComponent(document.getElementById('outputText').textContent);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  }
+
+  function shareNative() {
+    const text = document.getElementById('outputText').textContent;
+    if (navigator.share) {
+      navigator.share({ text });
+    } else {
+      copyContent();
+    }
+  }
+
+  // PWA Install
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    setTimeout(() => document.getElementById('installBanner').classList.add('visible'), 2000);
+  });
+
+  document.getElementById('installBtn').addEventListener('click', () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+        document.getElementById('installBanner').classList.remove('visible');
+      });
+    }
+  });
+
+  // Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+
+  // Generate on Enter
+  document.getElementById('topicInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') generateContent();
+  });
+</script>
+</body>
+</html>
